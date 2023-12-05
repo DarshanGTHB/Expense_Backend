@@ -47,13 +47,12 @@ def otp():
 @app.route('/userId',methods=['POST'])
 def userId():
     data = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute("SELECT USER_ID FROM USER_DATA WHERE USER_ID='"+data+"'")
     data = cursor.fetchall()
     cursor.close()
     connection.close()
-    print(data)
     if len(data)>0:
         return jsonify(0)
     else:
@@ -62,7 +61,7 @@ def userId():
 @app.route('/api',methods=['POST'])
 def api():
     data = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute(data)
     data = cursor.fetchall()
@@ -73,7 +72,7 @@ def api():
 @app.route('/setAc',methods=['POST'])
 def setAc():
     data = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute(data)
     connection.commit();
@@ -84,7 +83,7 @@ def setAc():
 @app.route('/login',methods=['POST'])
 def login():
     inp = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute("SELECT PASSWORD FROM USER_DATA WHERE USER_ID='"+inp['USER_ID']+"'")
     data = cursor.fetchall()
@@ -99,7 +98,7 @@ def login():
 def signup():
     inp = request.get_json()
     warn=-1
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute('SELECT USER_ID FROM USER_DATA')
     users = cursor.fetchall()
@@ -131,8 +130,7 @@ def generate_transaction_id(length=16):
 @app.route('/income',methods=['POST'])
 def insert_income():
     data = request.get_json()
-    print("-------------------",data)
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     t_id=generate_transaction_id()
     query="INSERT INTO DEFAULT_INCOME VALUES ('"+t_id+"','"+data['user_id']+"',CURRENT_TIMESTAMP(3),'"+data['title']+"','"+data['description']+"',SYSDATE+"+str(data['counter'])+","+str(data['amount'])+",'"+data['account']+"','"+data['category']+"','',CURRENT_TIMESTAMP(3))"
@@ -145,14 +143,13 @@ def insert_income():
 @app.route('/expense',methods=['POST'])
 def insert_expense():
     data = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     t_id=generate_transaction_id()
     query="SELECT BALANCE FROM DEFAULT_ACCOUNT WHERE USER_ID='"+data['user_id']+"' AND ACCOUNT_ID='"+data['account']+"'"
     cursor.execute(query)
     balance = cursor.fetchall()
     if (float(balance[0][0])-float(data['amount']))<0:
-        print(balance)
         return jsonify('Insufficient Balance');
 
     query="INSERT INTO DEFAULT_EXPENSE VALUES ('"+t_id+"','"+data['user_id']+"',CURRENT_TIMESTAMP(3),'"+data['title']+"','"+data['description']+"',SYSDATE+"+str(data['counter'])+","+str(data['amount'])+",'"+data['account']+"','"+data['category']+"','"+data['sent_to']+"',CURRENT_TIMESTAMP(3))"
@@ -165,15 +162,13 @@ def insert_expense():
 @app.route('/account',methods=['POST'])
 def insert_account():
     data = request.get_json()
-    print("**************",data)
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     t_id=generate_transaction_id()
     q="SELECT COUNT(ACCOUNT_ID) FROM DEFAULT_ACCOUNT WHERE USER_ID='"+data['user_id']+"'"
     cursor.execute(q)
     n= cursor.fetchall()
     query="INSERT INTO DEFAULT_ACCOUNT VALUES ('"+data['user_id']+"','A"+str(int(n[0][0])+1)+"','"+data['name']+"','"+data['type']+"','"+data['description']+"',"+data['opening']+","+data['balance']+")"
-    print("===========",query)
     cursor.execute(query)
     connection.commit()
     cursor.close()
@@ -183,7 +178,7 @@ def insert_account():
 @app.route('/monthly',methods=['POST'])
 def monthly():
     data = request.get_json()
-    connection = cx_Oracle.connect('c##devesh/devesh@localhost:1521/xe')
+    connection = cx_Oracle.connect('c##devesh','devesh','localhost:1521/xe')
     cursor = connection.cursor()
     cursor.execute(data)
     data = cursor.fetchall()
@@ -195,7 +190,6 @@ def monthly():
             ans[i[3]]=[i]
     cursor.close()
     connection.close()
-    print(ans)
     return (ans)
 
 if __name__ == '__main__':
